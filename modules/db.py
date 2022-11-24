@@ -1,7 +1,20 @@
+import os
+
 import psycopg2
 import sshtunnel
 from dotenv import load_dotenv
-import os
+
+
+def add_bd_event(db_conn, info):
+    with db_conn:
+        with db_conn.cursor() as cur:
+            # insert into events (name, description, place, date_event, creator, time_event)
+            # values ('Kok', 'joj', 'here', '2022-04-12','pm93.galstyan@gmail.com', '13:00:00');
+            cur.execute(
+                'INSERT INTO events (name, description, place, date_event, creator, time_event) values (%s, %s, %s, '
+                '%s, %s, %s)',
+                (info['name_event'], info['description_event'], info['place_event'], info['date_event'], info['email'],
+                 info['time_event']))
 
 
 def connect_db():
@@ -21,12 +34,6 @@ def connect_db():
         user=os.environ.get('USER'),
         password=os.environ.get('USER_PASSWORD')
     )
-    # cursor = conn.cursor()
-    # cursor.execute('SELECT * FROM public.employees')
-    # record = cursor.fetchall()
-    # conn.commit()
-    # cursor.close()
-    # print(record)
     return conn
 
 

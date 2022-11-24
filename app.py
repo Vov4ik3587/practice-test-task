@@ -1,21 +1,23 @@
 from flask import Flask, render_template
+from flask_wtf import FlaskForm
+
 
 app = Flask(__name__)
 
 
 @app.route("/")
 def start():
-    return render_template("title.html")
+    return render_template('title.html')
 
 
-@app.route("/enroll")
+@app.route("/subscribe")
 def subscribe():
-    return render_template("subscribe.html")
+    return render_template('subscribe.html')
 
 
 @app.route("/unsubscribe")
 def unsubscribe():
-    return render_template("unsubscribe.html")
+    return render_template('unsubscribe.html')
 
 
 if __name__ == "__main__":

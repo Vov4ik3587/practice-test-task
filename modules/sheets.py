@@ -5,18 +5,21 @@ import httplib2
 from oauth2client.service_account import ServiceAccountCredentials
 
 
+# def open_sheet(service, httpAuth):
+
+
 def create_sheet(service, info, httpAuth):
     new_spreadsheet = (
         service.spreadsheets()
         .create(
             body={
-                "properties": {"title": info, "locale": "ru_RU"},
+                "properties": {"title": info['name_event'], "locale": "ru_RU"},
                 "sheets": [
                     {
                         "properties": {
                             "sheetType": "GRID",
                             "sheetId": 0,
-                            "title": "Главное",
+                            "title": 'Главное',
                             "gridProperties": {"rowCount": 150, "columnCount": 10},
                         }
                     }
@@ -38,7 +41,7 @@ def create_sheet(service, info, httpAuth):
         )
         .execute()
     )
-    return new_spreadsheet["spreadsheetId"]
+    return new_spreadsheet["spreadsheetId"], new_spreadsheet['spreadsheetUrl']
 
 
 def connect_google_sheets_api(creds):
