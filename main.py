@@ -28,8 +28,9 @@ def create_event(db_conn, service, http_auth):
         'time_event': input('Время начала события(в формате HH:MM:SS):\n')
     }
 
-    modules.db.add_bd_event(db_conn, info_event)
 
+
+    modules.db.add_bd_event(db_conn, info_event)
     return modules.sheets.create_sheet(service, info_event, http_auth)
 
 

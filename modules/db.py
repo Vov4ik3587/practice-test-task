@@ -5,11 +5,14 @@ import sshtunnel
 from dotenv import load_dotenv
 
 
+def is_employee(db_conn, info):
+    with db_conn:
+        with db_conn.cursor() as cur:
+
+
 def add_bd_event(db_conn, info):
     with db_conn:
         with db_conn.cursor() as cur:
-            # insert into events (name, description, place, date_event, creator, time_event)
-            # values ('Kok', 'joj', 'here', '2022-04-12','pm93.galstyan@gmail.com', '13:00:00');
             cur.execute(
                 'INSERT INTO events (name, description, place, date_event, creator, time_event) values (%s, %s, %s, '
                 '%s, %s, %s)',

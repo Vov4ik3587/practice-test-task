@@ -19,7 +19,7 @@ def create_sheet(service, info, httpAuth):
                         "properties": {
                             "sheetType": "GRID",
                             "sheetId": 0,
-                            "title": 'Главное',
+                            "title": 'Main',
                             "gridProperties": {"rowCount": 150, "columnCount": 10},
                         }
                     }
@@ -31,9 +31,11 @@ def create_sheet(service, info, httpAuth):
     pprint(f"URL созданной таблицы {new_spreadsheet['spreadsheetUrl']}")
 
     # Выдача доступа на чтение кому угодно
-    driveService = apiclient.discovery.build("drive", "v3", http=httpAuth)
+    # TODO: выдавать на чтение только создателю и участникам
+
+    drive_service = apiclient.discovery.build("drive", "v3", http=httpAuth)
     _ = (
-        driveService.permissions()
+        drive_service.permissions()
         .create(
             fileId=new_spreadsheet["spreadsheetId"],
             body={"type": "anyone", "role": "reader"},
