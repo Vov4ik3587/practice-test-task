@@ -43,7 +43,7 @@ def create_sheet(service, info, httpAuth):
         )
         .execute()
     )
-    return new_spreadsheet["spreadsheetId"], new_spreadsheet['spreadsheetUrl']
+    return new_spreadsheet["spreadsheetId"]
 
 
 def connect_google_sheets_api(creds):
@@ -102,12 +102,4 @@ def spreadsheet_read(service, spreadsheet_id, range):
 
     pprint(values)
 
-
-def main():
-    service, http_auth = connect_google_sheets_api("creds.json")
-    info = "New Event"
-    spreadsheet_id = create_sheet(service, info, http_auth)
-
-
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":

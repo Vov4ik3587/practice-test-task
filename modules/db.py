@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 def is_employee(db_conn, info):
     with db_conn:
         with db_conn.cursor() as cur:
+            cur.execute('SELECT * FROM public.employees WHERE email=%s', (info['email'],))
+            return cur.fetchone()
 
 
 def add_bd_event(db_conn, info):
@@ -34,8 +36,8 @@ def connect_db():
     conn = psycopg2.connect(
         host='localhost',
         database=os.environ.get('DATABASE'),
-        user=os.environ.get('USER'),
-        password=os.environ.get('USER_PASSWORD')
+        user=os.environ.get('DB_USER_NAME'),
+        password=os.environ.get('DB_USER_PASSWORD')
     )
     return conn
 

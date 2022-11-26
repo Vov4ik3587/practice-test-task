@@ -1,6 +1,7 @@
+import sys
+
 import modules.db
 import modules.sheets
-import pprint
 
 
 def menu():
@@ -12,7 +13,7 @@ def menu():
     service, http_auth = modules.sheets.connect_google_sheets_api('modules/creds.json')
 
     if pick == 1:
-        id_spreadsheet, url_spreadsheet = create_event(db_conn, service, http_auth)
+        id_spreadsheet = create_event(db_conn, service, http_auth)
 
 
 def create_event(db_conn, service, http_auth):
@@ -28,10 +29,11 @@ def create_event(db_conn, service, http_auth):
         'time_event': input('Время начала события(в формате HH:MM:SS):\n')
     }
 
-
-
-    modules.db.add_bd_event(db_conn, info_event)
-    return modules.sheets.create_sheet(service, info_event, http_auth)
+    if modules.db.is_employee(db_conn, info_event):
+        modules.db.add_bd_event(db_conn, info_event)
+        return modules.sheets.create_sheet(service, info_event, http_auth)
+    else:
+        sys.exit('Вы не можете создать событие, так как не являетесь сотрудником')
 
 
 def main():
