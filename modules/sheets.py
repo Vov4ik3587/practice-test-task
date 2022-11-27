@@ -1,11 +1,21 @@
-from pprint import pprint
-
 import apiclient.discovery
 import httplib2
 from oauth2client.service_account import ServiceAccountCredentials
 
 
 # def open_sheet(service, httpAuth):
+def connect_google_sheets_api(creds):
+    CREDENTIALS_FILE = creds
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(
+        CREDENTIALS_FILE,
+        [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
+        ],
+    )
+    httpAuth = credentials.authorize(httplib2.Http())
+    service = apiclient.discovery.build("sheets", "v4", http=httpAuth)
+    return service, httpAuth
 
 
 def create_sheet(service, info, httpAuth):
@@ -28,7 +38,6 @@ def create_sheet(service, info, httpAuth):
         )
         .execute()
     )
-    pprint(f"URL созданной таблицы {new_spreadsheet['spreadsheetUrl']}")
 
     # Выдача доступа на чтение кому угодно
     # TODO: выдавать на чтение только создателю и участникам
@@ -43,24 +52,17 @@ def create_sheet(service, info, httpAuth):
         )
         .execute()
     )
-    return new_spreadsheet["spreadsheetId"]
+
+    # Заполняем пустую таблицу информацией
+    spreadsheet_template(service, new_spreadsheet['spreadsheetId'], info)
+
+    print(f"URL созданной таблицы {new_spreadsheet['spreadsheetUrl']}")
+
+    return new_spreadsheet['spreadsheetId'], new_spreadsheet['spreadsheetUrl']
 
 
-def connect_google_sheets_api(creds):
-    CREDENTIALS_FILE = creds
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        CREDENTIALS_FILE,
-        [
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive",
-        ],
-    )
-    httpAuth = credentials.authorize(httplib2.Http())
-    service = apiclient.discovery.build("sheets", "v4", http=httpAuth)
-    return service, httpAuth
-
-
-def spreadsheet_write(service, spreadsheet_id, range, values):
+def spreadsheet_template(service, spreadsheet_id, info):
+    # Заполняем таблицу данными
     values = (
         service.spreadsheets()
         .values()
@@ -70,36 +72,54 @@ def spreadsheet_write(service, spreadsheet_id, range, values):
                 "valueInputOption": "USER_ENTERED",
                 "data": [
                     {
-                        "range": "B3:C4",
+                        "range": "A1:D6",
                         "majorDimension": "ROWS",
                         "values": [
-                            ["This is B3", "This is C3"],
-                            ["This is B4", "This is C4"],
-                        ],
-                    },
-                    {
-                        "range": "D5:E6",
-                        "majorDimension": "COLUMNS",
-                        "values": [
-                            ["This is D5", "This is D6"],
-                            ["This is E5", "=5+5"],
+                            ['Название события', info['name_event']],
+                            ['Описание события', info['description_event']],
+                            ['Место проведения', info['place_event']],
+                            ['Дата и время проведения', info['date_event'], info['time_event']],
+                            ['Создатель события', info['first_name'], info['last_name'], info['email']],
+                            ['Учатники события:']
                         ],
                     },
                 ],
             },
-        )
-        .execute()
+        ).execute()
+    )
+    # меняем размер ячеек
+    results = (
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=spreadsheet_id,
+            body={
+                'requests': [
+                    {
+                        "updateDimensionProperties": {
+                            "range": {
+                                "sheetId": 0,
+                                "dimension": "COLUMNS",
+                                "startIndex": 0,
+                                "endIndex": 4
+                            },
+                            "properties": {
+                                "pixelSize": 300
+                            },
+                            "fields": "pixelSize"
+                        }
+                    }
+                ]
+            }
+        ).execute()
     )
 
-
-def spreadsheet_read(service, spreadsheet_id, range):
-    values = (
-        service.spreadsheets()
-        .values()
-        .get(spreadsheetId=spreadsheet_id, range="A1:E10", majorDimension="COLUMNS")
-        .execute()
-    )
-
-    pprint(values)
+# def spreadsheet_read(service, spreadsheet_id, range):
+#     values = (
+#         service.spreadsheets()
+#         .values()
+#         .get(spreadsheetId=spreadsheet_id, range="A1:E10", majorDimension="COLUMNS")
+#         .execute()
+#     )
+#
+#     print(values)
 
 # if __name__ == "__main__":

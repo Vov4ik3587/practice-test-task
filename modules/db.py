@@ -5,23 +5,6 @@ import sshtunnel
 from dotenv import load_dotenv
 
 
-def is_employee(db_conn, info):
-    with db_conn:
-        with db_conn.cursor() as cur:
-            cur.execute('SELECT * FROM public.employees WHERE email=%s', (info['email'],))
-            return cur.fetchone()
-
-
-def add_bd_event(db_conn, info):
-    with db_conn:
-        with db_conn.cursor() as cur:
-            cur.execute(
-                'INSERT INTO events (name, description, place, date_event, creator, time_event) values (%s, %s, %s, '
-                '%s, %s, %s)',
-                (info['name_event'], info['description_event'], info['place_event'], info['date_event'], info['email'],
-                 info['time_event']))
-
-
 def connect_db():
     dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
     if os.path.exists(dotenv_path):
@@ -40,6 +23,24 @@ def connect_db():
         password=os.environ.get('DB_USER_PASSWORD')
     )
     return conn
+
+
+def is_employee(db_conn, info):
+    with db_conn:
+        with db_conn.cursor() as cur:
+            cur.execute('SELECT * FROM public.employees WHERE email=%s', (info['email'],))
+            return cur.fetchone()
+
+
+def add_bd_event(db_conn, info, spreadsheet_id, spreadsheet_url):
+    with db_conn:
+        with db_conn.cursor() as cur:
+            cur.execute(
+                'INSERT INTO public.events (name, description, place, date_event, creator, time_event, '
+                'spreadsheet_url, spreadsheet_id) '
+                'values (%s, %s, %s, %s, %s, %s, %s, %s)',
+                (info['name_event'], info['description_event'], info['place_event'], info['date_event'], info['email'],
+                 info['time_event'], spreadsheet_id, spreadsheet_url))
 
 
 if __name__ == '__main__':
