@@ -1,22 +1,21 @@
 import os
 import smtplib
-from dotenv import load_dotenv
+
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-def send_email(info, is_creator):
-    dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-    if os.path.exists(dotenv_path):
-        load_dotenv(dotenv_path)
-
-    from_addr = os.environ.get('FROM_ADDR')
-    from_addr_password = os.environ.get('FROM_ADDR_PASSWORD')
+def connect_to_smtp():
 
     serv = smtplib.SMTP('smtp.yandex.ru', 587)
     serv.starttls()
     serv.ehlo()
-    serv.login(from_addr, from_addr_password)
+    serv.login(os.environ.get('FROM_ADDR'), os.environ.get('FROM_ADDR_PASSWORD'))
+    return serv
+
+
+def send_email(serv, info, is_creator):
+    from_addr = os.environ.get('FROM_ADDR')
 
     msg = MIMEMultipart()
     msg['From'] = from_addr
@@ -37,7 +36,6 @@ def send_email(info, is_creator):
         serv.send_message(msg)
 
         serv.quit()
-
 
 # if __name__ == '__main__':
 #     send_email('pm93.galstyan@gmail.com', is_creator=True)
