@@ -1,3 +1,5 @@
+from pprint import pprint
+
 import apiclient.discovery
 import httplib2
 from oauth2client.service_account import ServiceAccountCredentials
@@ -63,7 +65,7 @@ def create_sheet(service, info, httpAuth):
 
 def spreadsheet_template(service, spreadsheet_id, info):
     # Заполняем таблицу данными
-    values = (
+    _ = (
         service.spreadsheets()
         .values()
         .batchUpdate(
@@ -88,7 +90,7 @@ def spreadsheet_template(service, spreadsheet_id, info):
         ).execute()
     )
     # меняем размер ячеек
-    results = (
+    _ = (
         service.spreadsheets().batchUpdate(
             spreadsheetId=spreadsheet_id,
             body={
@@ -112,14 +114,54 @@ def spreadsheet_template(service, spreadsheet_id, info):
         ).execute()
     )
 
-# def spreadsheet_read(service, spreadsheet_id, range):
-#     values = (
-#         service.spreadsheets()
-#         .values()
-#         .get(spreadsheetId=spreadsheet_id, range="A1:E10", majorDimension="COLUMNS")
-#         .execute()
-#     )
-#
-#     print(values)
 
-# if __name__ == "__main__":
+def write_to_sheet(service, http_auth, event, info):
+    empty_row = find_empty_cells(service, event[2])
+
+    _ = (
+        service.spreadsheets()
+        .values()
+        .batchUpdate(
+            spreadsheetId=event[2],
+            body={
+                "valueInputOption": "USER_ENTERED",
+                "data": [
+                    {
+                        "range": f"B{empty_row}:D{empty_row}",
+                        "majorDimension": "ROWS",
+                        "values": [
+                            [info['first_name'], info['last_name'], info['email']]
+                        ]
+                    },
+                ],
+            },
+        ).execute()
+    )
+
+
+def find_empty_cells(service, spreadsheet_id):
+    start_index = 1
+    range = f"A{start_index}:D{start_index}"
+    val = spreadsheet_read(service, spreadsheet_id, range)
+    while 'values' in val:
+        range = f"A{start_index}:D{start_index}"
+        val = spreadsheet_read(service, spreadsheet_id, range)
+        start_index += 1
+    row_empty_cell = start_index - 1
+    return row_empty_cell
+
+
+def spreadsheet_read(service, spreadsheet_id, need_range):
+    values = (
+        service.spreadsheets()
+        .values()
+        .get(spreadsheetId=spreadsheet_id, range=need_range, majorDimension="COLUMNS")
+        .execute()
+    )
+    return values
+
+
+if __name__ == "__main__":
+    serv, http_auth = connect_google_sheets_api('creds.json')
+    curr_row = find_empty_cells(serv, '1b-UsZcB1kVV_BmlIz_XQmKlm2JU5vNcEONZSaNhWzi0')
+

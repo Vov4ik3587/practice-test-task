@@ -14,7 +14,7 @@ def connect_to_smtp():
     return serv
 
 
-def send_email(serv, info, is_creator):
+def send_email(serv, info, is_creator, participant=None):
     from_addr = os.environ.get('FROM_ADDR')
 
     msg = MIMEMultipart()
@@ -32,10 +32,38 @@ def send_email(serv, info, is_creator):
                f"С уважением, служба поддержки {from_addr}"
 
         msg.attach(MIMEText(body, 'plain'))
-
         serv.send_message(msg)
 
         serv.quit()
+    else:
+        # Отправляем сообщение тому, кто записался
+        msg['To'] = participant['email']
+        msg['Subject'] = 'Успешная запись'
+
+        body = f"Здравствуйте, {participant['first_name']} {participant['last_name']}" \
+               f"Вы успешно записались на событие {info[0]}" \
+               f"Ссылка на Google Sheet: {info[1]}\n\n\n" \
+               f"С уважением, служба поддержки {from_addr}"
+
+        msg.attach(MIMEText(body, 'plain'))
+        serv.send_message(msg)
+
+        # Отправляем сообщение создателю события о том, кто записался
+        msg['To'] = info[4]
+        msg['Subject'] = 'Запись на ваше событие'
+
+        body = f"Здравствуйте,\n" \
+               f"На созданное вами событие '{info[0]}' записался новый участник.\n" \
+               f"Имя участника: {participant['first_name']}\n" \
+               f"Фамилия участника: {participant['last_name']}\n" \
+               f"Электронная почта участника: {participant['email']} \n\n" \
+               f"С уважением, служба поддержки {from_addr}"
+
+        msg.attach(MIMEText(body, 'plain'))
+        serv.send_message(msg)
+
+        serv.quit()
+
 
 # if __name__ == '__main__':
 #     send_email('pm93.galstyan@gmail.com', is_creator=True)
