@@ -40,8 +40,8 @@ def send_email(serv, info, is_creator, participant=None):
         msg['To'] = participant['email']
         msg['Subject'] = 'Успешная запись'
 
-        body = f"Здравствуйте, {participant['first_name']} {participant['last_name']}" \
-               f"Вы успешно записались на событие {info[0]}" \
+        body = f"Здравствуйте, {participant['first_name']} {participant['last_name']}\n" \
+               f"Вы успешно записались на событие {info[0]}\n" \
                f"Ссылка на Google Sheet: {info[1]}\n\n\n" \
                f"С уважением, служба поддержки {from_addr}"
 
@@ -49,8 +49,10 @@ def send_email(serv, info, is_creator, participant=None):
         serv.send_message(msg)
 
         # Отправляем сообщение создателю события о том, кто записался
-        msg['To'] = info[4]
-        msg['Subject'] = 'Запись на ваше событие'
+        msg_second = MIMEMultipart()
+        msg_second['From'] = from_addr
+        msg_second['To'] = info[4]
+        msg_second['Subject'] = 'Запись на ваше событие'
 
         body = f"Здравствуйте,\n" \
                f"На созданное вами событие '{info[0]}' записался новый участник.\n" \
@@ -59,8 +61,8 @@ def send_email(serv, info, is_creator, participant=None):
                f"Электронная почта участника: {participant['email']} \n\n" \
                f"С уважением, служба поддержки {from_addr}"
 
-        msg.attach(MIMEText(body, 'plain'))
-        serv.send_message(msg)
+        msg_second.attach(MIMEText(body, 'plain'))
+        serv.send_message(msg_second)
 
         serv.quit()
 
